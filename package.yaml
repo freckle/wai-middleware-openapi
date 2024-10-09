@@ -5,6 +5,10 @@ category: Web
 synopsis: TODO
 description: TODO
 
+extra-doc-files:
+  - README.md
+  - CHANGELOG.md
+
 ghc-options:
   - -Weverything
   - -Wno-all-missed-specialisations
@@ -60,3 +64,33 @@ library:
     - openapi3
     - text
     - wai
+
+tests:
+  spec:
+    main: Spec.hs
+    source-dirs: tests
+    ghc-options: -threaded -rtsopts "-with-rtsopts=-N"
+    dependencies:
+      - aeson
+      - hspec
+      - http-types
+      - insert-ordered-containers
+      - lens
+      - openapi3
+      - text
+      - wai
+      - wai-extra
+      - wai-middleware-openapi
+
+  # readme:
+  #   main: README.lhs
+  #   ghc-options: -pgmL markdown-unlit
+  #   dependencies:
+  #     - Blammo
+  #     - amazonka-core
+  #     - amazonka-mtl
+  #     - amazonka-s3
+  #     - conduit
+  #     - lens
+  #     - markdown-unlit
+  #     - mtl

@@ -1,4 +1,4 @@
-cabal-version: 1.12
+cabal-version: 1.18
 
 -- This file has been generated from package.yaml by hpack version 0.37.0.
 --
@@ -10,7 +10,12 @@ synopsis:       TODO
 description:    TODO
 category:       Web
 maintainer:     Freckle Education
+license:        MIT
+license-file:   LICENSE
 build-type:     Simple
+extra-doc-files:
+    README.md
+    CHANGELOG.md
 
 library
   exposed-modules:
@@ -53,6 +58,50 @@ library
     , openapi3
     , text
     , wai
+  default-language: GHC2021
+  if impl(ghc >= 9.2)
+    ghc-options: -Wno-missing-kind-signatures
+  if impl(ghc >= 8.10)
+    ghc-options: -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Network.Wai.Middleware.OpenApiSpec
+      TestApp
+      Paths_wai_middleware_openapi
+  hs-source-dirs:
+      tests
+  default-extensions:
+      DataKinds
+      DeriveAnyClass
+      DerivingStrategies
+      DerivingVia
+      DuplicateRecordFields
+      GADTs
+      LambdaCase
+      NoFieldSelectors
+      NoImplicitPrelude
+      NoMonomorphismRestriction
+      NoPostfixOperators
+      OverloadedRecordDot
+      OverloadedStrings
+      QuasiQuotes
+      TypeFamilies
+  ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-monomorphism-restriction -Wno-safe -Wno-unsafe -threaded -rtsopts "-with-rtsopts=-N"
+  build-depends:
+      aeson
+    , base <5
+    , hspec
+    , http-types
+    , insert-ordered-containers
+    , lens
+    , openapi3
+    , text
+    , wai
+    , wai-extra
+    , wai-middleware-openapi
   default-language: GHC2021
   if impl(ghc >= 9.2)
     ghc-options: -Wno-missing-kind-signatures
