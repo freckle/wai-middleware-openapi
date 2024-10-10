@@ -58,6 +58,33 @@ settings = (OpenApi.defaultSettings openApi)
 
 Once you address what you find in the logs, you can disable `evaluateOnly`.
 
+## Performance & Sampling
+
+This middleware may add a performance tax depending on the size of your typical
+requests, responses, and OpenAPI spec itself. If you are concerned, we recommend
+enabling this middleware on a sampling of requests.
+
+For example,
+
+```hs
+openApiMiddleware :: OpenApi.Settings -> Middleware
+openApiMiddleware settings =
+  -- Only validate 20% of requests
+  sampledMiddleware 20
+    $ OpenApi.validateRequestBody settings
+    . OpenApi.validateResponseBody settings
+
+sampledMiddleware :: Int -> Middleware -> Middleware
+sampledMiddleware percent m app request respond = do
+  roll <- randomRIO (0, 100)
+  if percent <= roll
+    then m app request respond
+    else app request respond
+```
+
+> [!NOTE]
+> We will likely upstream `sampledMiddleware` to `wai-extra` at some point.
+
 ---
 
 [CHANGELOG](./CHANGELOG.md) | [LICENSE](./LICENSE)
