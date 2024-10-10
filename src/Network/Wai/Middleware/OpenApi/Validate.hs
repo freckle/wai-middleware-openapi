@@ -24,7 +24,7 @@ data ValidateOptions extra a = ValidateOptions
   , respondErrors :: ValidationErrors -> IO a
   }
 
--- | Interal DRY'ing of request-vs-response validation
+-- | Internal DRY'ing of request-vs-response validation
 validate :: ValidateOptions extra a -> IO a
 validate options = do
   case options.schema of
