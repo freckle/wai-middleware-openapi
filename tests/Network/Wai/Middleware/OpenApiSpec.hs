@@ -6,18 +6,19 @@ import Prelude
 
 import Data.Aeson (encode)
 import Network.Wai
-import Network.Wai.Middleware.OpenApi
+import Network.Wai.Middleware.OpenApi qualified as OpenApi
 import Network.Wai.Test hiding (request)
 import Test.Hspec
 import TestApp
 
 spec :: Spec
 spec = do
-  describe "validateRequestBody" $ do
-    let
-      settings = defaultSettings testOpenApi
-      app = validateRequestBody settings testApp
-      request = (setPath defaultRequest "/tests") {requestMethod = "POST"}
+  let
+    app :: Application
+    app = OpenApi.validate testOpenApi testApp
+
+  describe "validate requests" $ do
+    let request = (setPath defaultRequest "/tests") {requestMethod = "POST"}
 
     it "responds 400 for invalid request bodies" $ do
       withSession app $ do
@@ -42,11 +43,7 @@ spec = do
         assertStatus 201 sresponse
         assertBody (encode $ OK True) sresponse
 
-  describe "validateResponseBody" $ do
-    let
-      settings = defaultSettings testOpenApi
-      app = validateResponseBody settings testApp
-
+  describe "validate responses" $ do
     it "responds 500 for invalid response bodies" $ do
       let request = setPath defaultRequest "/tests/42" -- broken
       withSession app $ do

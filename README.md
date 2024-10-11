@@ -16,12 +16,8 @@ middleware :: Middleware
 middleware =
   thisMiddleware
     . thatMiddleware
-    . OpenApi.validateRequestBody settings
-    . OpenApi.validateResponseBody settings
+    . OpenApi.validate openApi
     . theOtherMiddleware
-
-settings :: OpenApi.Settings
-settings = OpenApi.defaultSettings openApi
 
 -- Defined in your /docs or /openapi.json Handler
 openApi :: OpenApi
@@ -43,20 +39,50 @@ This is useful if you,
 
 If all or some of these are not true, see the next section.
 
+## Configuring
+
+The `validate` function is equivalent to,
+
+```hs
+validateRequests defaultOnRequestErrors
+  . validateResponses defaultOnResponseErrors
+```
+
+Where those "on" functions take the appropriate error type and return a
+`Middleware`. The reason it returns a middleware is so that it can decide if it
+should take over the response or let it run normally:
+
+```hs
+defaultOnRequestErrors :: RequestErrors -> Middleware
+defaultOnRequestErrors = \case
+  RequestSchemaNotFound {} -> id -- respond normally
+  RequestIsNotJson {} -> id
+  RequestInvalid _ errs -> \_ _ respond ->
+    respond $ clientErrorResponse errs -- respond with an error
+```
+
+Implementing and using a function like this would be how you:
+
+1. Decide to error on missing schema, etc
+2. Change the shape of of the JSON errors
+3. Emit non-JSON errors
+
 ## Evaluation
 
 When first implementing this, you probably want to log invalid cases but still
-respond normally.
+respond normally. To support this use-case, the library ships replacements for
+`defaultOn*` that are named `evaluateOn*`. These functions take an action to
+apply to the errors (presumably to log them) and then responds normally.
 
 ```hs
-settings :: OpenApi.Settings
-settings = (OpenApi.defaultSettings openApi)
-  { OpenApi.onValidationErrors = {- metrics, logging, etc -}
-  , OpenApi.evaluateOnly = True
-  }
+validateRequests (evaluateOnRequestErrors logIt)
+  . validateResponses (evaluateOnResponseErrors logIt)
+
+logIt :: Show e => e -> IO ()
+logIt = undefined
 ```
 
-Once you address what you find in the logs, you can disable `evaluateOnly`.
+The action is necessarily `IO` because we're in a WAI middleware context.
 
 ## Performance & Sampling
 
@@ -70,9 +96,7 @@ For example,
 openApiMiddleware :: OpenApi.Settings -> Middleware
 openApiMiddleware settings =
   -- Only validate 20% of requests
-  sampledMiddleware 20
-    $ OpenApi.validateRequestBody settings
-    . OpenApi.validateResponseBody settings
+  sampledMiddleware 20 $ OpenApi.validate spec
 
 sampledMiddleware :: Int -> Middleware -> Middleware
 sampledMiddleware percent m app request respond = do

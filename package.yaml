@@ -61,6 +61,7 @@ library:
     - http-types
     - insert-ordered-containers
     - lens
+    - mtl
     - openapi3
     - text
     - wai
