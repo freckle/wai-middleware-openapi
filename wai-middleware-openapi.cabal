@@ -51,6 +51,7 @@ library
     , bytestring
     , containers
     , filepath
+    , http-media
     , http-types
     , insert-ordered-containers
     , lens

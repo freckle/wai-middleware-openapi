@@ -13,11 +13,21 @@ import Control.Monad.Except
 import Control.Monad.State
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BSL
+import Data.HashMap.Strict.InsOrd (InsOrdHashMap)
 import Data.Maybe (fromMaybe)
-import Data.OpenApi (OpenApi, Operation, PathItem, Schema)
+import Data.OpenApi
+  ( Definitions
+  , MediaTypeObject
+  , OpenApi
+  , Operation
+  , PathItem
+  , Referenced
+  , Schema
+  )
 import Data.OpenApi qualified as OpenApi
 import Data.OpenApi.Schema.Generator qualified as OpenApi (dereference)
 import Data.String (IsString)
+import Network.HTTP.Media (MediaType)
 import Network.HTTP.Types.Method (StdMethod (..), parseMethod)
 import Network.HTTP.Types.Status (Status, statusCode)
 import Network.Wai (Request)
@@ -54,22 +64,10 @@ lookupRequestSchema
   => OpenApi
   -> PathMap
   -> m Schema
-lookupRequestSchema spec pathMap = do
-  request <- get
-  pathItem <- getPathItem request pathMap
-  operation <- getOperation request pathItem
-
-  ref <- note MissingRequestBody $ operation ^? OpenApi.requestBody . _Just
-
-  let body = OpenApi.dereference definitions ref
-
-  ct <-
-    note (MissingContent contentTypeJson) $
-      body ^? OpenApi.content . ix contentTypeJson . OpenApi.schema . _Just
-  pure $ OpenApi.dereference schemas ct
+lookupRequestSchema spec = lookupOperationSchema spec definitions $ \operation ->
+  note MissingRequestBody $ operation ^? OpenApi.requestBody . _Just
  where
   definitions = fromMaybe mempty $ spec ^? OpenApi.components . OpenApi.requestBodies
-  schemas = fromMaybe mempty $ spec ^? OpenApi.components . OpenApi.schemas
 
 lookupResponseSchema
   :: (MonadError SchemaNotFound m, MonadState Request m)
@@ -77,24 +75,35 @@ lookupResponseSchema
   -> OpenApi
   -> PathMap
   -> m Schema
-lookupResponseSchema status spec pathMap = do
+lookupResponseSchema status spec =
+  lookupOperationSchema spec definitions $ \operation -> do
+    responses <- note MissingResponses $ operation ^? OpenApi.responses
+    note (MissingResponseStatus status) $ case responses ^? ix (statusCode status) of
+      Just rr -> Just rr
+      Nothing -> responses ^? OpenApi.default_ . _Just
+ where
+  definitions = fromMaybe mempty $ spec ^? OpenApi.components . OpenApi.responses
+
+lookupOperationSchema
+  :: ( MonadState Request m
+     , MonadError SchemaNotFound m
+     , OpenApi.HasContent a (InsOrdHashMap MediaType MediaTypeObject)
+     )
+  => OpenApi
+  -> Definitions a
+  -> (Operation -> m (Referenced a))
+  -> PathMap
+  -> m Schema
+lookupOperationSchema spec definitions getBodyRef pathMap = do
   request <- get
   pathItem <- getPathItem request pathMap
   operation <- getOperation request pathItem
-
-  responses <- note MissingResponses $ operation ^? OpenApi.responses
-  ref <- note (MissingResponseStatus status) $ case responses ^? ix (statusCode status) of
-    Just rr -> Just rr
-    Nothing -> responses ^? OpenApi.default_ . _Just
-
-  let body = OpenApi.dereference definitions ref
-
-  ct <-
+  body <- OpenApi.dereference definitions <$> getBodyRef operation
+  contentType <-
     note (MissingResponseContent contentTypeJson) $
       body ^? OpenApi.content . ix contentTypeJson . OpenApi.schema . _Just
-  pure $ OpenApi.dereference schemas ct
+  pure $ OpenApi.dereference schemas contentType
  where
-  definitions = fromMaybe mempty $ spec ^? OpenApi.components . OpenApi.responses
   schemas = fromMaybe mempty $ spec ^? OpenApi.components . OpenApi.schemas
 
 getPathItem
