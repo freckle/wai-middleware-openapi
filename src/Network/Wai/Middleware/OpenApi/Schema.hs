@@ -8,7 +8,7 @@ module Network.Wai.Middleware.OpenApi.Schema
 
 import Prelude
 
-import Control.Lens (ix, to, (^?), _Just)
+import Control.Lens (ix, (^?), _Just)
 import Control.Monad.Except
 import Control.Monad.State
 import Data.ByteString (ByteString)
@@ -34,6 +34,8 @@ data SchemaNotFound
     MissingRequestBody
   | -- | The specified request does not have this content(-type)
     MissingContent ByteString
+  | -- | The specified operation defines no responses
+    MissingResponses
   | -- | The specified response does not have this status
     MissingResponseStatus Status
   | -- | The specified response does not have this content(-type)
@@ -47,9 +49,6 @@ data SchemaNotFound
 note :: MonadError e m => e -> Maybe a -> m a
 note e = maybe (throwError e) pure
 
-wip :: MonadError SchemaNotFound m => Maybe a -> m a
-wip = maybe (throwError $ MissingPath "/todo") pure
-
 lookupRequestSchema
   :: (MonadError SchemaNotFound m, MonadState Request m)
   => OpenApi
@@ -59,8 +58,11 @@ lookupRequestSchema spec pathMap = do
   request <- get
   pathItem <- getPathItem request pathMap
   operation <- getOperation request pathItem
+
   ref <- note MissingRequestBody $ operation ^? OpenApi.requestBody . _Just
+
   let body = OpenApi.dereference definitions ref
+
   ct <-
     note (MissingContent contentTypeJson) $
       body ^? OpenApi.content . ix contentTypeJson . OpenApi.schema . _Just
@@ -79,22 +81,21 @@ lookupResponseSchema status spec pathMap = do
   request <- get
   pathItem <- getPathItem request pathMap
   operation <- getOperation request pathItem
-  responses <- wip $ operation ^? OpenApi.responses
-  ref <- wip $ case responses ^? ix (statusCode status) of
+
+  responses <- note MissingResponses $ operation ^? OpenApi.responses
+  ref <- note (MissingResponseStatus status) $ case responses ^? ix (statusCode status) of
     Just rr -> Just rr
     Nothing -> responses ^? OpenApi.default_ . _Just
 
-  let
-    definitions = fromMaybe mempty $ spec ^? OpenApi.components . OpenApi.responses
-    schemas = fromMaybe mempty $ spec ^? OpenApi.components . OpenApi.schemas
+  let body = OpenApi.dereference definitions ref
 
-  wip $
-    OpenApi.dereference definitions ref
-      ^? OpenApi.content
-        . ix "application/json"
-        . OpenApi.schema
-        . _Just
-        . to (OpenApi.dereference schemas)
+  ct <-
+    note (MissingResponseContent contentTypeJson) $
+      body ^? OpenApi.content . ix contentTypeJson . OpenApi.schema . _Just
+  pure $ OpenApi.dereference schemas ct
+ where
+  definitions = fromMaybe mempty $ spec ^? OpenApi.components . OpenApi.responses
+  schemas = fromMaybe mempty $ spec ^? OpenApi.components . OpenApi.schemas
 
 getPathItem
   :: MonadError SchemaNotFound m
