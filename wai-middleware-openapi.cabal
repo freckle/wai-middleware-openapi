@@ -1,6 +1,6 @@
 cabal-version: 1.18
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -69,6 +69,7 @@ test-suite spec
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Network.Wai.Middleware.OpenApi.PathMapSpec
       Network.Wai.Middleware.OpenApiSpec
       TestApp
       Paths_wai_middleware_openapi
@@ -92,8 +93,10 @@ test-suite spec
       TypeFamilies
   ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-monomorphism-restriction -Wno-safe -Wno-unsafe -threaded -rtsopts "-with-rtsopts=-N"
   build-depends:
-      aeson
+      QuickCheck
+    , aeson
     , base <5
+    , bytestring
     , hspec
     , http-types
     , insert-ordered-containers
