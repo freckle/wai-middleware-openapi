@@ -1,10 +1,10 @@
-module Network.Wai.Middleware.OpenApi.PathMap (
-  PathMap,
-  fromOpenApi,
-  fromList,
-  lookup,
-  empty,
-) where
+module Network.Wai.Middleware.OpenApi.PathMap
+  ( PathMap
+  , fromOpenApi
+  , fromList
+  , lookup
+  , empty
+  ) where
 
 import Prelude hiding (lookup)
 
