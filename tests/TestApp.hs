@@ -110,8 +110,7 @@ testOpenApi = flip evalDeclare mempty $ do
                                 & OpenApi._Inline
                                   . OpenApi.content
                                   . at "application/json"
-                                  ?~ ( mempty & OpenApi.schema ?~ okRef
-                                     )
+                                  ?~ (mempty & OpenApi.schema ?~ okRef)
                              )
                      )
             )
@@ -125,8 +124,7 @@ testOpenApi = flip evalDeclare mempty $ do
                                 & OpenApi._Inline
                                   . OpenApi.content
                                   . at "application/json"
-                                  ?~ ( mempty & OpenApi.schema ?~ testRef
-                                     )
+                                  ?~ (mempty & OpenApi.schema ?~ testRef)
                              )
                      )
             )
