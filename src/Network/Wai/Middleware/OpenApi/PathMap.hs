@@ -19,21 +19,21 @@ import Data.OpenApi (OpenApi, PathItem)
 import Data.OpenApi qualified as OpenApi
 import System.FilePath.Posix qualified as Posix
 
-newtype PathMap = PathMap
-  { unwrap :: Map TemplatedPath PathItem
+newtype PathMap a = PathMap
+  { unwrap :: Map TemplatedPath a
   }
 
-empty :: PathMap
+empty :: PathMap a
 empty = PathMap Map.empty
 
-fromOpenApi :: OpenApi -> PathMap
+fromOpenApi :: OpenApi -> PathMap PathItem
 fromOpenApi spec =
   maybe empty (fromList . IHashMap.toList) $ spec ^? OpenApi.paths
 
-fromList :: [(FilePath, PathItem)] -> PathMap
+fromList :: [(FilePath, a)] -> PathMap a
 fromList = PathMap . Map.fromList . map (first toTemplatedPath)
 
-lookup :: ByteString -> PathMap -> Maybe PathItem
+lookup :: ByteString -> PathMap a -> Maybe a
 lookup p pm = Map.lookup (toTemplatedPath $ BS8.unpack p) pm.unwrap
 
 newtype TemplatedPath = TemplatedPath
