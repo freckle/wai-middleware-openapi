@@ -107,8 +107,7 @@ getPathItem
   => Request
   -> PathMap
   -> m PathItem
-getPathItem request pathMap =
-  note (MissingPath path) $ PathMap.lookup path pathMap
+getPathItem request = note (MissingPath path) . PathMap.lookup path
  where
   path = Wai.rawPathInfo request
 
