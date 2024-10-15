@@ -1,8 +1,10 @@
-module Network.Wai.Middleware.OpenApi.PathMap
-  ( PathMap
-  , fromOpenApi
-  , lookup
-  ) where
+module Network.Wai.Middleware.OpenApi.PathMap (
+  PathMap,
+  fromOpenApi,
+  fromList,
+  lookup,
+  empty,
+) where
 
 import Prelude hiding (lookup)
 
@@ -17,17 +19,21 @@ import Data.OpenApi (OpenApi, PathItem)
 import Data.OpenApi qualified as OpenApi
 import System.FilePath.Posix qualified as Posix
 
-newtype PathMap = PathMap
-  { unwrap :: Map TemplatedPath PathItem
+newtype PathMap a = PathMap
+  { unwrap :: Map TemplatedPath a
   }
 
-fromOpenApi :: OpenApi -> PathMap
-fromOpenApi spec =
-  PathMap $ case spec ^? OpenApi.paths of
-    Nothing -> Map.empty
-    Just ps -> Map.fromList $ map (first toTemplatedPath) $ IHashMap.toList ps
+empty :: PathMap a
+empty = PathMap Map.empty
 
-lookup :: ByteString -> PathMap -> Maybe PathItem
+fromOpenApi :: OpenApi -> PathMap PathItem
+fromOpenApi spec =
+  maybe empty (fromList . IHashMap.toList) $ spec ^? OpenApi.paths
+
+fromList :: [(FilePath, a)] -> PathMap a
+fromList = PathMap . Map.fromList . map (first toTemplatedPath)
+
+lookup :: ByteString -> PathMap a -> Maybe a
 lookup p pm = Map.lookup (toTemplatedPath $ BS8.unpack p) pm.unwrap
 
 newtype TemplatedPath = TemplatedPath

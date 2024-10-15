@@ -54,7 +54,7 @@ data SchemaNotFound
 lookupRequestSchema
   :: (MonadError SchemaNotFound m, MonadState Request m)
   => OpenApi
-  -> PathMap
+  -> PathMap PathItem
   -> m Schema
 lookupRequestSchema spec =
   lookupOperationSchema spec $ \operation -> do
@@ -68,7 +68,7 @@ lookupResponseSchema
   :: (MonadError SchemaNotFound m, MonadState Request m)
   => Status
   -> OpenApi
-  -> PathMap
+  -> PathMap PathItem
   -> m Schema
 lookupResponseSchema status spec =
   lookupOperationSchema spec $ \operation -> do
@@ -87,7 +87,7 @@ lookupOperationSchema
      )
   => OpenApi
   -> (Operation -> m body)
-  -> PathMap
+  -> PathMap PathItem
   -> m Schema
 lookupOperationSchema spec getBody pathMap = do
   request <- get
@@ -105,7 +105,7 @@ lookupOperationSchema spec getBody pathMap = do
 getPathItem
   :: MonadError SchemaNotFound m
   => Request
-  -> PathMap
+  -> PathMap PathItem
   -> m PathItem
 getPathItem request = note (MissingPath path) . PathMap.lookup path
  where
