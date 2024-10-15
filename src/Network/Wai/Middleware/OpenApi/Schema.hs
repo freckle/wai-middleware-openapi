@@ -1,5 +1,3 @@
-{-# LANGUAGE ImpredicativeTypes #-}
-
 module Network.Wai.Middleware.OpenApi.Schema
   ( SchemaNotFound (..)
   , lookupRequestSchema
