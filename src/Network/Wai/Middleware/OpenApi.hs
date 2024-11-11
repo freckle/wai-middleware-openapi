@@ -38,9 +38,19 @@ validate spec =
     . validateResponses spec defaultOnResponseErrors
 
 data RequestErrors
-  = RequestSchemaNotFound SchemaNotFound
-  | RequestIsNotJson BSL.ByteString String
-  | RequestInvalid Value ValidationErrors
+  = -- | The OpenAPI spec doesn't contain a schema for this request
+    --
+    -- The 'SchemaNotFound' component will attempt to describe what about the
+    -- request and/or spec prevented finding schema.
+  RequestSchemaNotFound SchemaNotFound
+  | -- | The request was not JSON
+    --
+    -- Components are the raw body and error.
+  RequestIsNotJson BSL.ByteString String
+  | -- | The request was considered invalid
+    --
+    -- Components are parsed body and errors.
+  RequestInvalid Value ValidationErrors
   deriving stock (Show)
 
 defaultOnRequestErrors :: RequestErrors -> Middleware
