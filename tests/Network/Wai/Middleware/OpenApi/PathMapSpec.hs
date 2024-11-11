@@ -81,7 +81,6 @@ spec = do
           `shouldBe` Just (testPathItem "/pet-stores/{petStoreId}/pets/{petId}")
 
         PathMap.lookup "/pet-stores/5/pets/mine" pathMap
-          `shouldBe` Nothing
           `shouldBe` Just (testPathItem "/pet-stores/{petStoreId}/pets/mine")
 
 testOpenApi :: [String] -> OpenApi
