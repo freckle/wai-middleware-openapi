@@ -42,15 +42,15 @@ data RequestErrors
     --
     -- The 'SchemaNotFound' component will attempt to describe what about the
     -- request and/or spec prevented finding schema.
-  RequestSchemaNotFound SchemaNotFound
+    RequestSchemaNotFound SchemaNotFound
   | -- | The request was not JSON
     --
     -- Components are the raw body and error.
-  RequestIsNotJson BSL.ByteString String
+    RequestIsNotJson BSL.ByteString String
   | -- | The request was considered invalid
     --
     -- Components are parsed body and errors.
-  RequestInvalid Value ValidationErrors
+    RequestInvalid Value ValidationErrors
   deriving stock (Show)
 
 defaultOnRequestErrors :: RequestErrors -> Middleware
@@ -68,9 +68,16 @@ evaluateOnRequestErrors f errs app request respond = do
   app request respond
 
 data ResponseErrors
-  = ResponseSchemaNotFound SchemaNotFound
-  | ResponseIsNotJson BSL.ByteString String
-  | ResponseInvalid Value ValidationErrors
+  = -- | The OpenAPI spec doesn't contain a schema for this response
+    ResponseSchemaNotFound SchemaNotFound
+  | -- | The response was not JSON
+    --
+    -- Components are the raw body and error.
+    ResponseIsNotJson BSL.ByteString String
+  | -- | The response was considered invalid
+    --
+    -- Components are parsed body and errors.
+    ResponseInvalid Value ValidationErrors
   deriving stock (Show)
 
 defaultOnResponseErrors :: ResponseErrors -> Middleware
