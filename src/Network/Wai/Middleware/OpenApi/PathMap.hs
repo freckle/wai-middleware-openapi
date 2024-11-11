@@ -6,34 +6,54 @@ module Network.Wai.Middleware.OpenApi.PathMap
 
 import Prelude hiding (lookup)
 
+import Control.Applicative ((<|>))
 import Control.Lens ((^?))
+import Control.Monad (guard)
 import Data.Bifunctor (first)
 import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as BS8
-import Data.HashMap.Strict.InsOrd qualified as IHashMap
-import Data.Map.Strict (Map)
-import Data.Map.Strict qualified as Map
+import Data.Function (on)
+import Data.HashMap.Strict.InsOrd qualified as IOHM
+import Data.List (find)
+import Data.List.NonEmpty (nonEmpty)
+import Data.List.NonEmpty qualified as NE
+import Data.Maybe (fromMaybe)
 import Data.OpenApi (OpenApi, PathItem)
 import Data.OpenApi qualified as OpenApi
 import System.FilePath.Posix qualified as Posix
 
 newtype PathMap = PathMap
-  { unwrap :: Map TemplatedPath PathItem
+  { unwrap :: [(TemplatedPath, PathItem)]
   }
 
 fromOpenApi :: OpenApi -> PathMap
 fromOpenApi spec =
   PathMap $ case spec ^? OpenApi.paths of
-    Nothing -> Map.empty
-    Just ps -> Map.fromList $ map (first toTemplatedPath) $ IHashMap.toList ps
+    Nothing -> []
+    Just ps -> map (first toTemplatedPath) $ IOHM.toList ps
 
 lookup :: ByteString -> PathMap -> Maybe PathItem
-lookup p pm = Map.lookup (toTemplatedPath $ BS8.unpack p) pm.unwrap
+lookup bs pm =
+  fmap snd $ find (matchExact tp . fst) ps <|> find (matchTemplated tp . fst) ps
+ where
+  tp = toTemplatedPath $ BS8.unpack bs
+  ps = pm.unwrap
+
+matchExact :: TemplatedPath -> TemplatedPath -> Bool
+matchExact = matchComponents (==) `on` (.unwrap)
+
+matchTemplated :: TemplatedPath -> TemplatedPath -> Bool
+matchTemplated = matchComponents go `on` (.unwrap)
+ where
+  go = curry $ \case
+    (Exact l, Exact r) -> l == r
+    (ParameterValue, _) -> True
+    (_, ParameterValue) -> True
 
 newtype TemplatedPath = TemplatedPath
-  { _unwrap :: [TemplatedPathComponent]
+  { unwrap :: [TemplatedPathComponent]
   }
-  deriving stock (Eq, Ord)
+  deriving stock (Eq)
 
 toTemplatedPath :: FilePath -> TemplatedPath
 toTemplatedPath =
@@ -44,16 +64,20 @@ toTemplatedPath =
 data TemplatedPathComponent
   = Exact FilePath
   | ParameterValue
-
-instance Eq TemplatedPathComponent where
-  Exact l == Exact r = l == r
-  _ == _ = True
-
-instance Ord TemplatedPathComponent where
-  compare (Exact l) (Exact r) = compare l r
-  compare _ _ = EQ
+  deriving stock (Eq)
 
 toTemplatedPathComponent :: FilePath -> TemplatedPathComponent
-toTemplatedPathComponent s
-  | not (null s) && head s == '{' && last s == '}' = ParameterValue
-  | otherwise = Exact s
+toTemplatedPathComponent s = fromMaybe (Exact s) $ do
+  ne <- nonEmpty s
+  guard $ NE.head ne == '{'
+  guard $ NE.last ne == '}'
+  pure ParameterValue
+
+matchComponents
+  :: (TemplatedPathComponent -> TemplatedPathComponent -> Bool)
+  -> [TemplatedPathComponent]
+  -> [TemplatedPathComponent]
+  -> Bool
+matchComponents f as bs
+  | length as /= length bs = False
+  | otherwise = and $ zipWith f as bs

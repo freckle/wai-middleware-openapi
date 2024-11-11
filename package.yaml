@@ -56,7 +56,6 @@ library:
   dependencies:
     - aeson
     - bytestring
-    - containers
     - filepath
     - http-media
     - http-types

@@ -49,7 +49,6 @@ library
       aeson
     , base <5
     , bytestring
-    , containers
     , filepath
     , http-media
     , http-types
@@ -69,6 +68,7 @@ test-suite spec
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Network.Wai.Middleware.OpenApi.PathMapSpec
       Network.Wai.Middleware.OpenApiSpec
       TestApp
       Paths_wai_middleware_openapi
