@@ -18,8 +18,8 @@ spec = do
   describe "lookup" $ do
     specify "OpenApi precedence example" $ do
       let pathMap =
-            PathMap.fromOpenApi $
-              testOpenApi
+            PathMap.fromOpenApi
+              $ testOpenApi
                 [ "/pets/{petId}"
                 , "/pets/mine"
                 ]
@@ -32,8 +32,8 @@ spec = do
 
     specify "Chris' example" $ do
       let pathMap =
-            PathMap.fromOpenApi $
-              testOpenApi
+            PathMap.fromOpenApi
+              $ testOpenApi
                 [ "/book/{bookId}/cover"
                 , "/book/{bookId}/text"
                 , "/{resource}/{resourceId}/text"
@@ -57,8 +57,8 @@ spec = do
     context "ambiguous according to spec" $ do
       specify "books" $ do
         let pathMap =
-              PathMap.fromOpenApi $
-                testOpenApi
+              PathMap.fromOpenApi
+                $ testOpenApi
                   [ "/{entity}/me"
                   , "/books/{id}"
                   ]
@@ -71,8 +71,8 @@ spec = do
 
       specify "pet-stores" $ do
         let pathMap =
-              PathMap.fromOpenApi $
-                testOpenApi
+              PathMap.fromOpenApi
+                $ testOpenApi
                   [ "/pet-stores/{petStoreId}/pets/mine"
                   , "/pet-stores/{petStoreId}/pets/{petId}"
                   ]

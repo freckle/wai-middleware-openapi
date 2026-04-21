@@ -23,8 +23,8 @@ spec = do
     it "responds 400 for invalid request bodies" $ do
       withSession app $ do
         sresponse <-
-          srequest $
-            SRequest
+          srequest
+            $ SRequest
               { simpleRequest = request
               , simpleRequestBody = "{}"
               }
@@ -34,8 +34,8 @@ spec = do
     it "passes through valid bodies" $ do
       withSession app $ do
         sresponse <-
-          srequest $
-            SRequest
+          srequest
+            $ SRequest
               { simpleRequest = request
               , simpleRequestBody = encode $ NewTest "foo"
               }
@@ -48,8 +48,8 @@ spec = do
       let request = setPath defaultRequest "/tests/42" -- broken
       withSession app $ do
         sresponse <-
-          srequest $
-            SRequest
+          srequest
+            $ SRequest
               { simpleRequest = request
               , simpleRequestBody = ""
               }
@@ -60,8 +60,8 @@ spec = do
       let request = setPath defaultRequest "/tests/99"
       withSession app $ do
         sresponse <-
-          srequest $
-            SRequest
+          srequest
+            $ SRequest
               { simpleRequest = request
               , simpleRequestBody = ""
               }

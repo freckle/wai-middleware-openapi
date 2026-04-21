@@ -58,8 +58,8 @@ lookupRequestSchema
   -> m Schema
 lookupRequestSchema spec =
   lookupOperationSchema spec $ \operation -> do
-    note MissingRequestBody $
-      operation
+    note MissingRequestBody
+      $ operation
         ^? OpenApi.requestBody
           . _Just
           . to (dereference spec OpenApi.requestBodies)
@@ -81,9 +81,9 @@ lookupResponseSchema status spec =
     pure $ dereference spec OpenApi.responses ref
 
 lookupOperationSchema
-  :: ( MonadState Request m
+  :: ( HasContent body (InsOrdHashMap MediaType MediaTypeObject)
      , MonadError SchemaNotFound m
-     , HasContent body (InsOrdHashMap MediaType MediaTypeObject)
+     , MonadState Request m
      )
   => OpenApi
   -> (Operation -> m body)
@@ -94,8 +94,8 @@ lookupOperationSchema spec getBody pathMap = do
   pathItem <- getPathItem request pathMap
   operation <- getOperation request pathItem
   body <- getBody operation
-  note MissingContentTypeJson $
-    body
+  note MissingContentTypeJson
+    $ body
       ^? OpenApi.content
         . ix "application/json"
         . OpenApi.schema

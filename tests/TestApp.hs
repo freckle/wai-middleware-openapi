@@ -103,15 +103,15 @@ testOpenApi = flip evalDeclare mempty $ do
             , mempty
                 & OpenApi.post
                   ?~ ( mempty
-                        & OpenApi.requestBody
-                          ?~ OpenApi.Ref (OpenApi.Reference "Test")
-                        & at 201
-                          ?~ ( "OK"
-                                & OpenApi._Inline
-                                  . OpenApi.content
-                                  . at "application/json"
-                                  ?~ (mempty & OpenApi.schema ?~ okRef)
-                             )
+                         & OpenApi.requestBody
+                           ?~ OpenApi.Ref (OpenApi.Reference "Test")
+                         & at 201
+                           ?~ ( "OK"
+                                  & OpenApi._Inline
+                                    . OpenApi.content
+                                    . at "application/json"
+                                    ?~ (mempty & OpenApi.schema ?~ okRef)
+                              )
                      )
             )
           ,
@@ -119,13 +119,13 @@ testOpenApi = flip evalDeclare mempty $ do
             , mempty
                 & OpenApi.get
                   ?~ ( mempty
-                        & at 200
-                          ?~ ( "OK"
-                                & OpenApi._Inline
-                                  . OpenApi.content
-                                  . at "application/json"
-                                  ?~ (mempty & OpenApi.schema ?~ testRef)
-                             )
+                         & at 200
+                           ?~ ( "OK"
+                                  & OpenApi._Inline
+                                    . OpenApi.content
+                                    . at "application/json"
+                                    ?~ (mempty & OpenApi.schema ?~ testRef)
+                              )
                      )
             )
           ]

@@ -13,11 +13,11 @@ newtype ValidateT e m a = ValidateT
   { unwrap :: ExceptT e (StateT Request m) a
   }
   deriving newtype
-    ( Functor
-    , Applicative
+    ( Applicative
+    , Functor
     , Monad
-    , MonadIO
     , MonadError e
+    , MonadIO
     , MonadState Request
     )
 
