@@ -16,18 +16,19 @@ ghc-options:
   - -Wno-missing-exported-signatures # re-enables missing-signatures
   - -Wno-missing-import-lists
   - -Wno-missing-local-signatures
+  - -Wno-missing-safe-haskell-mode
   - -Wno-monomorphism-restriction
+  - -Wno-prepositive-qualified-module
   - -Wno-safe
   - -Wno-unsafe
 
 when:
+  - condition: "impl(ghc >= 9.8)"
+    ghc-options:
+      - -Wno-missing-role-annotations
   - condition: "impl(ghc >= 9.2)"
     ghc-options:
       - -Wno-missing-kind-signatures
-  - condition: "impl(ghc >= 8.10)"
-    ghc-options:
-      - -Wno-missing-safe-haskell-mode
-      - -Wno-prepositive-qualified-module
 
 dependencies:
   - base < 5

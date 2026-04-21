@@ -44,7 +44,7 @@ library
       OverloadedStrings
       QuasiQuotes
       TypeFamilies
-  ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-monomorphism-restriction -Wno-safe -Wno-unsafe
+  ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-missing-safe-haskell-mode -Wno-monomorphism-restriction -Wno-prepositive-qualified-module -Wno-safe -Wno-unsafe
   build-depends:
       aeson
     , base <5
@@ -59,10 +59,10 @@ library
     , text
     , wai >=3.2.4
   default-language: GHC2021
+  if impl(ghc >= 9.8)
+    ghc-options: -Wno-missing-role-annotations
   if impl(ghc >= 9.2)
     ghc-options: -Wno-missing-kind-signatures
-  if impl(ghc >= 8.10)
-    ghc-options: -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
 
 test-suite spec
   type: exitcode-stdio-1.0
@@ -90,7 +90,7 @@ test-suite spec
       OverloadedStrings
       QuasiQuotes
       TypeFamilies
-  ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-monomorphism-restriction -Wno-safe -Wno-unsafe -threaded -rtsopts "-with-rtsopts=-N"
+  ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-missing-safe-haskell-mode -Wno-monomorphism-restriction -Wno-prepositive-qualified-module -Wno-safe -Wno-unsafe -threaded -rtsopts "-with-rtsopts=-N"
   build-depends:
       aeson
     , base <5
@@ -104,7 +104,7 @@ test-suite spec
     , wai-extra
     , wai-middleware-openapi
   default-language: GHC2021
+  if impl(ghc >= 9.8)
+    ghc-options: -Wno-missing-role-annotations
   if impl(ghc >= 9.2)
     ghc-options: -Wno-missing-kind-signatures
-  if impl(ghc >= 8.10)
-    ghc-options: -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
