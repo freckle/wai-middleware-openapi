@@ -1,6 +1,6 @@
 cabal-version: 1.18
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.39.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -57,7 +57,7 @@ library
     , mtl
     , openapi3
     , text
-    , wai
+    , wai >=3.2.4
   default-language: GHC2021
   if impl(ghc >= 9.2)
     ghc-options: -Wno-missing-kind-signatures

@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Network.Wai.Middleware.OpenApi
   ( validate
   , RequestErrors (..)
@@ -30,6 +32,12 @@ import Network.Wai.Middleware.OpenApi.PathMap qualified as PathMap
 import Network.Wai.Middleware.OpenApi.Schema
 import Network.Wai.Middleware.OpenApi.Validate
 import Network.Wai.Middleware.OpenApi.ValidationError
+
+#if !MIN_VERSION_mtl(2, 3, 1)
+-- <https://hackage-content.haskell.org/package/mtl-2.3.2/docs/src/Control.Monad.Error.Class.html#modifyError>
+modifyError :: MonadError e' m => (e -> e') -> ExceptT e m a -> m a
+modifyError f m = runExceptT m >>= either (throwError . f) pure
+#endif
 
 -- | Validate using 'defaultOnRequestErrors' and 'defaultOnResponseErrors'
 validate :: OpenApi -> Middleware
