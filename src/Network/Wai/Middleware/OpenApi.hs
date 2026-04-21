@@ -98,8 +98,8 @@ validateRequests :: OpenApi -> (RequestErrors -> Middleware) -> Middleware
 validateRequests spec onErrors app request0 respond = do
   result <- runValidateT request0 $ do
     schema <-
-      modifyError RequestSchemaNotFound $
-        lookupRequestSchema spec pathMap
+      modifyError RequestSchemaNotFound
+        $ lookupRequestSchema spec pathMap
     bytes <- previewRequestBody
     body <- decodeBody RequestIsNotJson bytes
     validateBody RequestInvalid definitions schema body
@@ -117,8 +117,8 @@ validateResponses spec onErrors app request0 respond = do
     result <- runValidateT request0 $ do
       let status = Wai.responseStatus response
       schema <-
-        modifyError ResponseSchemaNotFound $
-          lookupResponseSchema status spec pathMap
+        modifyError ResponseSchemaNotFound
+          $ lookupResponseSchema status spec pathMap
       bytes <- getResponseBody response
       body <- decodeBody ResponseIsNotJson bytes
       validateBody ResponseInvalid definitions schema body
